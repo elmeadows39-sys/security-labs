@@ -1,2 +1,2 @@
 # security-labs
-Small security and networking labs with documentation.
+This repository contains small security and networking labs with brief documentation.
