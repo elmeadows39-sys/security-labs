@@ -5,3 +5,14 @@ The environment is designed with a trusted home network and a separate lab netwo
 
 Over time, this project may include media services, experimental workloads, and security labs, all built on the same underlying network foundation.
 
+## High-Level Network Layout
+
+Internet → ASUS Router (Trusted Network)
+- Main PC
+- Phones, TV, IoT
+- Omni Wi-Fi extender (same SSID)
+
+ASUS Router → Netgear Router (Lab Network)
+- Old PC used for testing and experiments
+
+The lab network is isolated from the trusted home network and is intended for learning, experimentation, and future homelab services.
