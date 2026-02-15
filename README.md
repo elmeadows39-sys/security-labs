@@ -42,3 +42,48 @@ All services are reachable within the lab network and configured to start automa
 - **SOAR tooling** for security automation and response workflows
 - **Nextcloud** for self-hosted file sharing and collaboration
 - Additional network segmentation and security controls
+
+## High-Level Network Layout (Current)
+Internet → ASUS Router (Primary / Trusted Network)
+DHCP, NAT, firewall handled here
+Flat subnet (192.168.1.0/24) by design
+
+Trusted Devices
+Main PC
+Phones, TV, IoT
+Omni Wi-Fi extender (same SSID)
+
+Lab Access Layer
+Netgear router in Access Point mode
+No routing, NAT, or DHCP
+Acts as Wi-Fi AP and switch only
+
+Current Lab State (Phase 1 – Operational)
+The homelab runs on Proxmox VE installed on bare-metal hardware.
+Workloads are primarily deployed as Linux containers (LXCs) for efficiency, isolation, and modular growth, with select VMs used where full virtualization is required.
+
+Core Services (Operational)
+Proxmox VE – Bare-metal hypervisor
+Pi-hole – Network-wide DNS filtering
+Unbound – Recursive DNS resolver paired with Pi-hole
+Uptime Kuma – Service availability monitoring
+Vaultwarden – Self-hosted password manager
+Caddy – Internal reverse proxy and HTTPS groundwork
+Centralized Log VM – Virtual machine for logging and future security analysis
+All services are reachable on the LAN and configured to start automatically.
+
+Data Protection & Reliability
+External USB backup storage attached to Proxmox
+Daily automated backups scheduled at the datacenter level
+Retention policy: last 7 backups
+Snapshots used selectively for pre-change rollback
+Backups validated by test restores
+
+In Progress
+Jellyfin Media Server – Planned VM-based deployment (migration from desktop Plex)
+SIEM / Log Analysis – Log VM in place as foundation for future tooling
+Planned (Next Phase)
+VLAN-based network segmentation
+Firewall rule refinement and hardening
+SOAR tooling for security automation
+Nextcloud for self-hosted file sharing
