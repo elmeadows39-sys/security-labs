@@ -17,7 +17,11 @@ Client Devices → Pi-hole (filtering) → Unbound (recursive resolver) → Root
 
 ## Configuration
 Pi-hole upstream DNS set to Unbound's IP (192.168.1.84) on port 5335.
-Unbound configured as a recursive resolver with DNSSEC validation enabled.
+Unbound access restricted to local subnet (192.168.1.0/24) only — external queries rejected.
 
 ## Result
 All DNS queries on the network are filtered by Pi-hole and resolved recursively by Unbound with no third-party DNS provider involved.
+
+## Future Improvements
+- Enable DNSSEC validation on Unbound for cryptographic verification of DNS responses
+- Note: DNSSEC requires careful testing to avoid breaking DNS resolution — plan a maintenance window
