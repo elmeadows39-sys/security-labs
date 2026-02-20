@@ -96,3 +96,6 @@ True VLAN-based segmentation between the trusted and lab networks is not current
 **SSH Bastion (LXC 108)** — Dedicated SSH access point for secure console access to lab services.
 
 **Local AI / Ollama (Supercomputer)** — Llama 3.2 deployed locally for private, offline AI inference. Open WebUI setup planned for browser-based chat interface.
+
+- **WireGuard VPN** (LXC 109 - 192.168.1.110) — Remote access via snoopylab23.asuscomm.com:51820
+added and succssful test with phone today, adding laptop soon!
