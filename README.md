@@ -93,7 +93,7 @@ Nextcloud for self-hosted file sharing
 ## Network Architecture Notes
 
 ### Current Network Design
-The lab currently operates on a flat network (192.168.1.0/24) managed by the ASUS RT-AC68U. The Netgear R6250 operates in Access Point mode, extending WiFi coverage with no routing or DHCP of its own.
+The lab currently operates on a flat network (192.168.1.1/24) managed by the ASUS RT-AC68U. The Netgear R6250 operates in Access Point mode, extending WiFi coverage with no routing or DHCP of its own.
 
 ### Security Considerations
 True VLAN-based segmentation between the trusted and lab networks is not currently implemented due to hardware limitations on the ASUS router. Network isolation is achieved physically where possible.
