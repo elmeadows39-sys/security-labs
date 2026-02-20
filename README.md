@@ -89,3 +89,16 @@ SOAR tooling for security automation
 Nextcloud for self-hosted file sharing
 ## Network Diagram
 ![Network Diagram](Homelab1.0.png)
+
+## Network Architecture Notes
+
+### Current Network Design
+The lab currently operates on a flat network (192.168.1.0/24) managed by the ASUS RT-AC68U. The Netgear R6250 operates in Access Point mode, extending WiFi coverage with no routing or DHCP of its own.
+
+### Security Considerations
+True VLAN-based segmentation between the trusted and lab networks is not currently implemented due to hardware limitations on the ASUS router. Network isolation is achieved physically where possible.
+
+### Planned Improvements
+- VLAN-based network segmentation (requires managed switch or router upgrade)
+- Firewall rule refinement between trusted and lab zones
+- Full traffic isolation for Proxmox and lab workloads
