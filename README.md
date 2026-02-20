@@ -90,3 +90,9 @@ True VLAN-based segmentation between the trusted and lab networks is not current
 - VLAN-based network segmentation (requires managed switch or router upgrade)
 - Firewall rule refinement between trusted and lab zones
 - Full traffic isolation for Proxmox and lab workloads
+
+## Additional Services
+
+**SSH Bastion (LXC 108)** — Dedicated SSH access point for secure console access to lab services.
+
+**Local AI / Ollama (Supercomputer)** — Llama 3.2 deployed locally for private, offline AI inference. Open WebUI setup planned for browser-based chat interface.
