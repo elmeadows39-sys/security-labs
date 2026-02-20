@@ -87,3 +87,5 @@ VLAN-based network segmentation
 Firewall rule refinement and hardening
 SOAR tooling for security automation
 Nextcloud for self-hosted file sharing
+## Network Diagram
+![Network Diagram](Homelab1.0.png)
