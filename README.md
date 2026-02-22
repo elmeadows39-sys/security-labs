@@ -97,5 +97,6 @@ True VLAN-based segmentation between the trusted and lab networks is not current
 
 **Local AI / Ollama (Supercomputer)** — Llama 3.2 deployed locally for private, offline AI inference. Open WebUI setup planned for browser-based chat interface.
 
-- **WireGuard VPN** (LXC 109 - 192.168.1.110) — Remote access via snoopylab23.asuscomm.com:51820
-added and succssful test with phone today, adding laptop soon!
+**WireGuard VPN (LXC 109 - 192.168.1.110)** — Remote access via snoopylab23.asuscomm.com:51820. 
+Running as wg-easy in Docker with --network host. Web UI at http://192.168.1.110:51821. 
+DNS routed through Pi-hole (192.168.1.225) for ad blocking on mobile. Phone client tested and working.
