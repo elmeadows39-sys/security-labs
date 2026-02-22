@@ -1,6 +1,5 @@
-# WireGuard VPN Setup
-
-**Date:** 2025-02-20  
+# WireGuard VPN Setup (wg-easy)
+**Date:** 2026-02-21  
 **LXC ID:** 109  
 **Hostname:** wireguard-01  
 **IP:** 192.168.1.110  
@@ -9,126 +8,82 @@
 ---
 
 ## Overview
+WireGuard VPN running via wg-easy in Docker. Provides remote access to the homelab from outside 
+the network using DDNS. DNS is routed through Pi-hole for ad blocking even on mobile data.
 
-WireGuard VPN server running in a Proxmox LXC. Allows remote access to the homelab from outside the network using DDNS. DNS is routed through Pi-hole for ad blocking even on mobile data.
+> **Note:** We started with a manual WireGuard install but replaced it with wg-easy for easier 
+> peer management via web UI. We also hit a Docker networking issue — see Troubleshooting section.
 
 ---
 
 ## Network Details
-
 | Item | Value |
 |------|-------|
 | LXC IP | 192.168.1.110 |
-| VPN Subnet | 10.0.0.0/24 |
-| Server VPN IP | 10.0.0.1 |
+| VPN Subnet | 10.8.0.0/24 |
+| Server VPN IP | 10.8.0.1 |
 | Listen Port | 51820 (UDP) |
+| Web UI Port | 51821 (TCP) |
 | DDNS Endpoint | snoopylab23.asuscomm.com:51820 |
 | DNS (Pi-hole) | 192.168.1.225 |
+| Web UI | http://192.168.1.110:51821 |
+
+---
+
+## Peer IP Assignments
+| Device | VPN IP |
+|--------|--------|
+| Server | 10.8.0.1 |
+| Phone  | 10.8.0.2 |
+
+---
+
+## Prerequisites
+Docker must be installed on the LXC. The LXC also needs nesting enabled in Proxmox 
+(Options > Features > Nesting) for Docker to run properly.
 
 ---
 
 ## Installation
 
+### 1. Install Docker
 ```bash
 apt update && apt upgrade -y
-apt install -y wireguard wireguard-tools
+curl -fsSL https://get.docker.com | sh
 ```
 
----
-
-## Server Key Generation
-
+### 2. Run wg-easy
 ```bash
-wg genkey | tee /etc/wireguard/privatekey | wg pubkey > /etc/wireguard/publickey
-chmod 600 /etc/wireguard/privatekey
+docker run -d \
+  --name=wg-easy \
+  --network host \
+  --cap-add=NET_ADMIN \
+  --cap-add=SYS_MODULE \
+  -e WG_HOST=snoopylab23.asuscomm.com \
+  -e PASSWORD_HASH='$2a$12$rF2vi1wzT2KYX6RSsyLxaeEiiv5602orfAD9ITWdRIPizKgN8uHQO' \
+  -e WG_DEFAULT_DNS=192.168.1.225 \
+  -v ~/.wg-easy:/etc/wireguard \
+  --restart unless-stopped \
+  ghcr.io/wg-easy/wg-easy
 ```
 
----
-
-## Server Config `/etc/wireguard/wg0.conf`
-
-```ini
-[Interface]
-Address = 10.0.0.1/24
-ListenPort = 51820
-PrivateKey = <server private key>
-
-[Peer]
-# Phone
-PublicKey = <phone public key>
-AllowedIPs = 10.0.0.2/32
-```
-
----
-
-## Enable and Start
-
-```bash
-systemctl enable wg-quick@wg0
-systemctl start wg-quick@wg0
-```
+> **Important:** `--network host` is required. Without it, the wg0 interface gets created inside 
+> the Docker network namespace instead of the LXC, breaking all routing.
 
 ---
 
 ## Adding a New Peer (Client)
-
-1. Generate a key pair for the new device:
-
-```bash
-wg genkey | tee /etc/wireguard/<device>_privatekey | wg pubkey > /etc/wireguard/<device>_publickey
-```
-
-2. Add a `[Peer]` block to `/etc/wireguard/wg0.conf`:
-
-```ini
-[Peer]
-PublicKey = <device public key>
-AllowedIPs = 10.0.0.X/32
-```
-
-3. Create a client config `/etc/wireguard/<device>.conf`:
-
-```ini
-[Interface]
-PrivateKey = <device private key>
-Address = 10.0.0.X/24
-DNS = 192.168.1.225
-
-[Peer]
-PublicKey = <server public key>
-Endpoint = snoopylab23.asuscomm.com:51820
-AllowedIPs = 0.0.0.0/0
-```
-
-4. Generate QR code for mobile:
-
-```bash
-apt install -y qrencode
-qrencode -t ansiutf8 -s 1 < /etc/wireguard/<device>.conf
-```
-
-5. Restart WireGuard to apply changes:
-
-```bash
-systemctl restart wg-quick@wg0
-```
-
----
-
-## Peer IP Assignments
-
-| Device | VPN IP |
-|--------|--------|
-| Server | 10.0.0.1 |
-| Phone  | 10.0.0.2 |
+1. Go to `http://192.168.1.110:51821`
+2. Log in with the admin password
+3. Click **+ New Client** and give it a name
+4. Scan the QR code with the WireGuard app on your device
+5. Enable the tunnel and test
 
 ---
 
 ## Router Port Forwarding (ASUS RT-AC68U)
-
 | Field | Value |
 |-------|-------|
-| Service Name | WireGuard |
 | Protocol | UDP |
 | External Port | 51820 |
 | Internal Port | 51820 |
@@ -137,18 +92,50 @@ systemctl restart wg-quick@wg0
 ---
 
 ## Verify Connection
-
 ```bash
 wg show
 ```
-
-Look for `latest handshake` under the peer — if it's recent, the tunnel is active and working.
+Look for `latest handshake` under the peer — if it's recent, the tunnel is active. 
+Also check transfer bytes are increasing while browsing.
 
 ---
 
-## Notes
+## Persistence
+nftables rules are saved to `/etc/nftables.conf` and load on boot:
+```bash
+systemctl enable nftables
+```
+The Docker container restarts automatically via `--restart unless-stopped`.
 
-- Each device gets its own key pair — never share private keys
-- Server uses `/24` for the interface, peers use `/32` (one specific IP each)
-- `AllowedIPs = 0.0.0.0/0` on the client routes ALL traffic through the VPN (full tunnel)
-- DNS set to Pi-hole so ad blocking works even on mobile data
+---
+
+## Troubleshooting
+
+### Problem: Nothing loads through the tunnel
+**Root cause:** Two issues combined:
+1. Running wg-easy without `--network host` puts wg0 inside Docker's network namespace — 
+   the LXC can't route traffic through it
+2. Docker sets a DROP policy on the nftables FORWARD chain, blocking all WireGuard traffic
+
+**Fix:**
+Recreate the container with `--network host` (no -p port mappings needed), then add nft rules:
+```bash
+nft insert rule ip filter FORWARD iifname "wg0" accept
+nft insert rule ip filter FORWARD oifname "wg0" accept
+```
+Save rules:
+```bash
+nft list ruleset > /etc/nftables.conf
+systemctl enable nftables
+```
+
+### Problem: iptables rules not taking effect
+This system uses both `iptables` (nftables backend) and `iptables-legacy`. 
+Rules added with `iptables` may not be seen by the kernel. Use `nft` commands directly instead.
+
+### Confirm traffic is using the tunnel
+```bash
+wg show
+```
+Check the endpoint IP — it should be your mobile carrier's IP, not your home IP, 
+confirming traffic is coming in over mobile data through the tunnel.
