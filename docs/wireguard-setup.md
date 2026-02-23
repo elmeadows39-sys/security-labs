@@ -35,6 +35,7 @@ the network using DDNS. DNS is routed through Pi-hole for ad blocking even on mo
 |--------|--------|
 | Server | 10.8.0.1 |
 | Phone  | 10.8.0.2 |
+| Laptop | 10.8.0.3
 
 ---
 
@@ -78,6 +79,22 @@ docker run -d \
 3. Click **+ New Client** and give it a name
 4. Scan the QR code with the WireGuard app on your device
 5. Enable the tunnel and test
+
+---
+
+## Split Tunnel Configuration (Recommended for Laptop)
+By default, wg-easy assigns Allowed IPs: 0.0.0.0/0 to new clients, which routes 
+all 
+traffic through the tunnel. This will kill internet access if you're already on 
+the home LAN.
+
+For the laptop peer, open the WireGuard app on Windows, click Edit on the tunnel, and change Allowed IPs to:
+
+10.8.0.0/24, 192.168.1.0/24
+
+This routes only homelab traffic through the tunnel and lets normal internet go out directly. Use this when connected at home. When away (e.g. at school on a different network), the default 0.0.0.0/0 is fine if you want Pi-hole DNS coverage on all traffic.
+
+To disconnect when not needed: leave the peer enabled in the wg-easy UI but simply deactivate the tunnel in the WireGuard Windows app. It will be ready to reconnect with one click.
 
 ---
 
