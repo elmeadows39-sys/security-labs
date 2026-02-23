@@ -1,8 +1,8 @@
 # Uptime Kuma Setup
 **Date:** 2026-02-22
-**LXC ID:** (add yours)
-**Hostname:** (add yours)
-**IP:** (add yours)
+**LXC ID:** 103
+**Hostname:** uptime-kuma-01
+**IP:** 192.168.1.4:3001
 **OS:** Debian 12
 
 ---
