@@ -100,3 +100,6 @@ True VLAN-based segmentation between the trusted and lab networks is not current
 **WireGuard VPN (LXC 109 - 192.168.1.110)** — Remote access via snoopylab23.asuscomm.com:51820. 
 Running as wg-easy in Docker with --network host. Web UI at http://192.168.1.110:51821. 
 DNS routed through Pi-hole (192.168.1.225) for ad blocking on mobile. Phone client tested and working.
+
+**Uptime Kuma** — Monitoring for Pi-hole, Unbound, Vaultwarden, and WireGuard. 
+Discord webhook notifications configured for downtime alerts.
