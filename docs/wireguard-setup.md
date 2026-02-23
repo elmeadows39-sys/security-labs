@@ -61,7 +61,7 @@ docker run -d \
   --cap-add=NET_ADMIN \
   --cap-add=SYS_MODULE \
   -e WG_HOST=snoopylab23.asuscomm.com \
-  -e PASSWORD_HASH='$2a$12$rF2vi1wzT2KYX6RSsyLxaeEiiv5602orfAD9ITWdRIPizKgN8uHQO' \
+  -e PASSWORD_HASH='<your-bcrypt-hash>' \
   -e WG_DEFAULT_DNS=192.168.1.225 \
   -v ~/.wg-easy:/etc/wireguard \
   --restart unless-stopped \
