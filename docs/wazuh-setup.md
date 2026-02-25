@@ -55,10 +55,10 @@ All agents installed using DEB amd64 package. Each LXC required `lsb-release` to
 | pihole-01 | 101 | 192.168.1.225 |
 | unbound-01 | 102 | 192.168.1.84 |
 | uptime-kuma-01 | 103 | 192.168.1.4 |
-| vaultwarden-01 | 104 | — |
-| caddy-01 | 105 | — |
+| vaultwarden-01 | 104 | 192.168.1.195 |
+| caddy-01 | 105 | 192.168.1.107 |
 | wireguard-01 | 109 | 192.168.1.110 |
-| ssh-01 | 108 | — |
+| ssh-01 | 108 | 192.168.1.96 |
 
 ### Agent Install Commands (per LXC)
 ```bash
