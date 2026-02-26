@@ -76,7 +76,7 @@ Firewall rule refinement and hardening
 SOAR tooling for security automation
 Nextcloud for self-hosted file sharing
 ## Network Diagram
-![Network Diagram](Homelab1.0.png)
+![Network Diagram](diagram/Homelab1.1.png)
 
 ## Network Architecture Notes
 
