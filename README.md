@@ -1,105 +1,149 @@
 # security-labs
-This repository documents a home network and homelab platform.
 
-The environment is designed with a trusted home network and a separate lab network to safely support learning, experimentation, and resume-building projects. The lab is intentionally isolated to reduce risk to everyday devices while enabling hands-on work with infrastructure, security, and system design.
+This repository documents a home network and homelab platform built for hands-on learning in infrastructure, security operations, and system administration — with a focus on resume-building projects targeting SOC/blue team roles.
 
-Over time, this project may include media services, experimental workloads, and security labs, all built on the same underlying network foundation.
+The environment runs on a flat home network (`192.168.1.0/24`) with Proxmox VE as the hypervisor. Services are deployed as Linux containers (LXCs) or VMs depending on workload requirements.
 
-## Current Lab State (Phase 1 – Operational)
+---
 
-The homelab is currently running on Proxmox VE installed on bare metal hardware within the isolated lab network. Services are deployed as individual Linux containers (LXCs) to support modular design, security isolation, and incremental expansion.
+## Current Lab State
 
-### Core Services (Operational)
-- **Proxmox VE** – Bare metal hypervisor hosting all lab workloads
-- **Pi-hole** – Network-wide DNS filtering and ad blocking
-- **Unbound** – Recursive DNS resolver paired with Pi-hole
-- **Uptime Kuma** – Service availability and uptime monitoring
-- **Vaultwarden** – Self-hosted password management service
-- **Caddy** – Reverse proxy container (HTTPS groundwork and internal routing)
-- **Centralized Log VM** – Dedicated virtual machine for log aggregation and future analysis
+### Hardware
+| Component | Details |
+|-----------|---------|
+| Hypervisor | Proxmox VE 6.17.2 — bare metal (`lab-pve`, 192.168.1.108) |
+| RAM | 24GB DDR3 (upgrade to 32GB planned) |
+| Boot Disk | Local SSD (upgrade to Kingston A400 240GB planned) |
+| Storage | 4TB external HDD (`/dev/sdb`) — partitioned for backups, Nextcloud, and general storage |
+| Network | ASUS RT-AC68U (primary router, DHCP/NAT) + Netgear R6250 (AP mode) |
+| Switch | TP-Link LS108GP (unmanaged — replacement with managed TP-Link TL-SG108PE V3 ordered for VLAN support) |
 
-All services are reachable within the lab network and configured to start automatically.
+### Storage Layout (4TB External HDD)
+| Partition | Size | Mount | Purpose |
+|-----------|------|-------|---------|
+| sdb1 | 465GB | `/mnt/pve/backup-hdd` | Proxmox VM/LXC backups |
+| sdb2 | 465GB | `/mnt/pve/nextcloud-aio` | Nextcloud AIO data |
+| sdb3 | 2.7TB | `/mnt/pve/storage` | Immich photos, Nextcloud files |
 
-## In Progress / Provisioning
+---
 
-- **Jellyfin Media Server** – Media server migration planned from an existing Plex deployment on the main desktop system
-- **SIEM / Log Analysis Stack** – Log VM deployed as the foundation for future security monitoring and analysis tooling
+## Services
 
-## Planned (Next Phase)
+### Infrastructure
+| Service | Type | ID | IP | Notes |
+|---------|------|----|----|-------|
+| Proxmox VE | Bare metal | — | 192.168.1.108 | Hypervisor for all lab workloads |
+| Pi-hole | LXC 101 | Debian 12 | 192.168.1.225 | Network-wide DNS filtering and ad blocking |
+| Unbound | LXC 102 | Debian 12 | 192.168.1.84 | Recursive DNS resolver — Pi-hole upstream |
+| Caddy | LXC 105 | Debian 12 | 192.168.1.107 | Reverse proxy, internal TLS for all `.lab` domains |
+| WireGuard (wg-easy) | LXC 109 | Debian 12 | 192.168.1.110 | Remote VPN access via DDNS (`snoopylab23.asuscomm.com:51820`) |
+| OPNsense | VM 111 | — | — | Firewall/router VM — pending managed switch for VLAN work |
 
-- **SOAR tooling** for security automation and response workflows
-- **Nextcloud** for self-hosted file sharing and collaboration
-- Additional network segmentation and security controls
+### Security
+| Service | Type | ID | IP | Notes |
+|---------|------|----|----|-------|
+| Wazuh SIEM | VM 100 | Ubuntu 22.04 | 192.168.1.140 | Full SIEM stack — manager, indexer, dashboard (v4.14.3) |
 
-## High-Level Network Layout (Current)
-Internet → ASUS Router (Primary / Trusted Network)
-DHCP, NAT, firewall handled here
-Flat subnet (192.168.1.0/24) by design
+### Monitoring
+| Service | Type | ID | IP | Notes |
+|---------|------|----|----|-------|
+| Uptime Kuma | LXC 103 | Debian 12 | 192.168.1.4 | Service uptime monitoring with Discord alerts |
 
-Trusted Devices
-Main PC
-Phones, TV, IoT
-Omni Wi-Fi extender (same SSID)
+### Self-Hosted Apps
+| Service | Type | ID | IP | Notes |
+|---------|------|----|----|-------|
+| Vaultwarden | LXC 104 | Debian 12 | 192.168.1.195 | Self-hosted Bitwarden-compatible password manager |
+| Jellyfin | VM 107 | Ubuntu 22.04 | 192.168.1.227 | Media server (migration from desktop Plex planned) |
+| Nextcloud AIO | VM 106 | Ubuntu 22.04 | 192.168.1.56 | File storage and collaboration (v12.8.0 with built-in Collabora) |
+| Immich | VM 114 | Ubuntu 22.04 | 192.168.1.219 | Self-hosted photo/video backup (Google Photos alternative) |
 
-Lab Access Layer
-Netgear router in Access Point mode
-No routing, NAT, or DHCP
-Acts as Wi-Fi AP and switch only
+---
 
-Current Lab State (Phase 1 – Operational)
-The homelab runs on Proxmox VE installed on bare-metal hardware.
-Workloads are primarily deployed as Linux containers (LXCs) for efficiency, isolation, and modular growth, with select VMs used where full virtualization is required.
+## Internal DNS + Reverse Proxy
 
-Core Services (Operational)
-Proxmox VE – Bare-metal hypervisor
-Pi-hole – Network-wide DNS filtering
-Unbound – Recursive DNS resolver paired with Pi-hole
-Uptime Kuma – Service availability monitoring
-Vaultwarden – Self-hosted password manager
-Caddy – Internal reverse proxy and HTTPS groundwork
-Centralized Log VM – Virtual machine for logging and future security analysis
-All services are reachable on the LAN and configured to start automatically.
+All services are accessible via `.lab` local domains, managed by Pi-hole DNS and Caddy reverse proxy.
 
-Data Protection & Reliability
-External USB backup storage attached to Proxmox
-Daily automated backups scheduled at the datacenter level
-Retention policy: last 7 backups
-Snapshots used selectively for pre-change rollback
-Backups validated by test restores
+| Domain | Service |
+|--------|---------|
+| vault.lab | Vaultwarden |
+| pihole.lab | Pi-hole admin |
+| nextcloud.lab | Nextcloud |
+| collabora.lab | Collabora (via Nextcloud AIO) |
+| immich.lab | Immich |
+| kuma.lab | Uptime Kuma |
+| wireguard.lab | WireGuard web UI |
+| jellyfin.lab | Jellyfin |
+| wazuh.lab | Wazuh dashboard |
 
-In Progress
-Jellyfin Media Server – Planned VM-based deployment (migration from desktop Plex)
-SIEM / Log Analysis – Log VM in place as foundation for future tooling
-Planned (Next Phase)
-VLAN-based network segmentation
-Firewall rule refinement and hardening
-SOAR tooling for security automation
-Nextcloud for self-hosted file sharing
+> All domains use `tls internal` (Caddy-managed self-signed certs). Migration to `*.meadows-lab.com` with Let's Encrypt wildcard cert via Cloudflare DNS challenge is in progress.
+
+---
+
+## Wazuh Agent Enrollment
+
+Wazuh monitors 9 agents across the lab. All agents must match server version (4.14.3).
+
+| Agent | ID | IP | Version | Status |
+|-------|----|----|---------|--------|
+| pihole-01 | 001 | 192.168.1.225 | 4.14.3 | ✅ Active |
+| unbound-01 | 002 | 192.168.1.84 | 4.14.3 | ✅ Active |
+| uptime-kuma-01 | 003 | 192.168.1.4 | 4.14.3 | ✅ Active |
+| vaultwarden-01 | 004 | 192.168.1.195 | 4.14.3 | ✅ Active |
+| caddy-01 | 005 | 192.168.1.107 | 4.14.3 | ✅ Active |
+| wireguard-01 | 006 | 192.168.1.110 | 4.14.3 | ✅ Active |
+| nextcloud-aio-02 | 007 | 192.168.1.56 | 4.14.0 | ✅ Active |
+| jellyfin-01 | 008 | 192.168.1.227 | 4.14.3 | ✅ Active |
+| immich-01 | 009 | 192.168.1.219 | 4.14.3 | ✅ Active |
+
+---
+
+## Backups
+
+- Proxmox backup job runs daily at 21:00
+- Retention: last 7 backups
+- Target: `sdb1` (`/mnt/pve/backup-hdd`)
+- Covers VMs/LXCs: 101, 102, 103, 104, 105, 107, 109, 100, 106, 114
+
+---
+
 ## Network Diagram
 ![Network Diagram](diagrams/Homelab1.1.png)
 
-## Network Architecture Notes
+---
 
-### Current Network Design
-The lab currently operates on a flat network (192.168.1.1/24) managed by the ASUS RT-AC68U. The Netgear R6250 operates in Access Point mode, extending WiFi coverage with no routing or DHCP of its own.
+## In Progress
 
-### Security Considerations
-True VLAN-based segmentation between the trusted and lab networks is not currently implemented due to hardware limitations on the ASUS router. Network isolation is achieved physically where possible.
+- **Domain + Wildcard Cert** — `meadows-lab.com` purchased via Cloudflare. Wildcard cert via Let's Encrypt DNS challenge planned. Will migrate all `.lab` services to `.meadows-lab.com` subdomains with trusted TLS.
+- **CIS Benchmark Hardening** — pihole-01 at 51%. AppArmor LXC issue pending. Rolling out to all agents after pihole-01 complete.
 
-### Planned Improvements
-- VLAN-based network segmentation (requires managed switch or router upgrade)
-- Firewall rule refinement between trusted and lab zones
-- Full traffic isolation for Proxmox and lab workloads
+---
 
-## Additional Services
+## Planned (Next Phase)
 
-**SSH Bastion (LXC 108)** — Dedicated SSH access point for secure console access to lab services.
+Priority ordered by resume/career impact (targeting SOC/blue team roles):
 
-**Local AI / Ollama (Supercomputer)** — Llama 3.2 deployed locally for private, offline AI inference. Open WebUI setup planned for browser-based chat interface.
+1. **Active Directory Lab** — Windows Server VM, AD DS, monitored by Wazuh. Blocked on RAM upgrade.
+2. **CIS Hardening** — Complete pihole-01, roll out to remaining agents.
+3. **Honeypot** — Deploy Cowrie or T-Pot, feed alerts into Wazuh.
+4. **Wazuh Custom Rules** — Write detection rules, simulate attacks, document response.
+5. **OPNsense + VLANs** — Pending TP-Link TL-SG108PE V3 managed switch arrival.
+6. **RAM Upgrade** — 2x4GB → 2x8GB DDR3 (ordered). Unlocks Home Assistant and AD lab.
+7. **Proxmox SSD Upgrade** — Kingston A400 240GB (ordered).
+8. **Home Assistant** — Blocked on RAM. Can run on flat network initially.
+9. **Vaultwarden Migration** — Point Bitwarden app at Vaultwarden after domain/cert setup complete.
+10. **SSO (Authentik)** — Requires HTTPS/domain setup first.
+11. **Update GitHub Diagram** — Reflect current lab state.
 
-**WireGuard VPN (LXC 109 - 192.168.1.110)** — Remote access via snoopylab23.asuscomm.com:51820. 
-Running as wg-easy in Docker with --network host. Web UI at http://192.168.1.110:51821. 
-DNS routed through Pi-hole (192.168.1.225) for ad blocking on mobile. Phone client tested and working.
+---
 
-**Uptime Kuma** — Monitoring for Pi-hole, Unbound, Vaultwarden, and WireGuard. 
-Discord webhook notifications configured for downtime alerts.
+## Setup Docs
+
+Detailed setup notes for each service are in the repo:
+
+- [Pi-hole + Unbound](pihole-unbound-setup.md)
+- [Uptime Kuma](uptime-kuma-setup.md)
+- [WireGuard (wg-easy)](wireguard-setup.md)
+- [Wazuh SIEM](wazuh-04.md)
+- [Nextcloud AIO](nextcloud-setup.md)
+- [Immich](immich-setup.md)
+- [HDD Partition Layout](hdd-partition-layout.md)
