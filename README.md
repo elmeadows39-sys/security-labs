@@ -107,7 +107,7 @@ Wazuh monitors 9 agents across the lab. All agents must match server version (4.
 ---
 
 ## Network Diagram
-![Network Diagram](diagrams/Homelab1.1.png)
+![Network Diagram](diagrams/Homelab1.2.png)
 
 ---
 
