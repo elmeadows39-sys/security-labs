@@ -90,7 +90,7 @@ All services are accessible via `.meadows-lab.com` subdomains, managed by Pi-hol
 
 ## Wazuh Agent Enrollment
 
-Wazuh monitors 14 agents across the lab. All agents must match server version (4.14.3).
+Wazuh monitors 11 agents across the lab. All agents must match server version (4.14.3).
 
 | Agent | ID | IP | Version | Status |
 |-------|----|----|---------|--------|
@@ -101,13 +101,10 @@ Wazuh monitors 14 agents across the lab. All agents must match server version (4
 | caddy-01 | 005 | 192.168.1.107 | 4.14.3 | ✅ Active |
 | wireguard-01 | 006 | 192.168.1.110 | 4.14.3 | ✅ Active |
 | nextcloud-aio-02 | 007 | 192.168.1.56 | 4.14.0 | ✅ Active |
-| immich-01 | 008 | 192.168.1.219 | 4.14.3 | ✅ Active |
+| immich-01 | 009 | 192.168.1.219 | 4.14.3 | ✅ Active |
 | cowrie-01 | 010 | 192.168.1.186 | 4.14.3 | ✅ Active |
 | lab-pve | 012 | 192.168.1.108 | 4.14.3 | ✅ Active |
 | jellyfin-02 | 013 | 192.168.1.223 | 4.14.3 | ✅ Active |
-| authentik-01 | 014 | 192.168.1.44 | 4.14.3 | ✅ Active |
-
-> Note: Agent IDs 009 and 011 were retired with previous VM rebuilds.
 
 ---
 
