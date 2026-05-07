@@ -45,8 +45,9 @@ The environment runs on a flat home network (`192.168.1.0/24`) with Proxmox VE a
 
 | Service | Type | ID | IP | Notes |
 |---------|------|----|----|-------|
-| Wazuh SIEM | VM 100 | Ubuntu 22.04 | 192.168.1.140 | Full SIEM stack — manager, indexer, dashboard (v4.14.3) |
+| Wazuh SIEM | VM 100 | Ubuntu 22.04 | 192.168.1.140 | Full SIEM stack — manager, indexer, dashboard (v4.14.5) |
 | Cowrie Honeypot | LXC 108 | Debian 12 | 192.168.1.186 | SSH honeypot on port 22 via iptables redirect — logs feed into Wazuh via custom rules |
+| win-server-01 | VM 113 | Windows Server 2019 | 192.168.1.150 | Active Directory domain controller (meadows-lab.local) — AD attack lab target, Wazuh agent enrolled |
 
 ### Monitoring
 
@@ -60,10 +61,11 @@ The environment runs on a flat home network (`192.168.1.0/24`) with Proxmox VE a
 |---------|------|----|----|-------|
 | Vaultwarden | LXC 104 | Debian 12 | 192.168.1.195 | Self-hosted Bitwarden-compatible password manager |
 | Jellyfin | VM 107 | Ubuntu 22.04 | 192.168.1.223 | Media server — metadata on sdb3, media via SMB from Supercomputer |
-| Nextcloud AIO | VM 106 | Ubuntu 22.04 | 192.168.1.56 | File storage and collaboration (v12.8.0 with built-in Collabora) |
+| Nextcloud AIO | VM 106 | Ubuntu 22.04 | 192.168.1.56 | File storage and collaboration (v12.9.2 with built-in Collabora) |
 | Immich | VM 114 | Ubuntu 22.04 | 192.168.1.219 | Self-hosted photo/video backup (Google Photos alternative) |
-| Authentik | VM 112 | Ubuntu 22.04 | 192.168.1.44 | SSO — OAuth2/OIDC provider, Portainer integrated |
-| Actual Budget + Portainer | LXC 115 | Debian 12 | 192.168.1.240 | Personal finance tracker (port 5006) + Portainer CE (port 9443) |
+| Authentik | VM 112 | Ubuntu 22.04 | 192.168.1.44 | SSO — OAuth2/OIDC provider, Portainer integrated — stopped, slated for review |
+| Actual Budget | LXC 110 | Debian 12 | 192.168.1.240 | Personal finance tracker (port 5006) |
+| Portainer CE | LXC 110 | Debian 12 | 192.168.1.240 | Docker management UI (port 9443) |
 
 ---
 
@@ -90,21 +92,38 @@ All services are accessible via `.meadows-lab.com` subdomains, managed by Pi-hol
 
 ## Wazuh Agent Enrollment
 
-Wazuh monitors 11 agents across the lab. All agents must match server version (4.14.3).
+Wazuh monitors 12 agents across the lab. All agents at v4.14.5.
 
 | Agent | ID | IP | Version | Status |
 |-------|----|----|---------|--------|
-| pihole-01 | 001 | 192.168.1.225 | 4.14.3 | ✅ Active |
-| unbound-01 | 002 | 192.168.1.84 | 4.14.3 | ✅ Active |
-| uptime-kuma-01 | 003 | 192.168.1.4 | 4.14.3 | ✅ Active |
-| vaultwarden-01 | 004 | 192.168.1.195 | 4.14.3 | ✅ Active |
-| caddy-01 | 005 | 192.168.1.107 | 4.14.3 | ✅ Active |
-| wireguard-01 | 006 | 192.168.1.110 | 4.14.3 | ✅ Active |
-| nextcloud-aio-02 | 007 | 192.168.1.56 | 4.14.0 | ✅ Active |
-| immich-01 | 009 | 192.168.1.219 | 4.14.3 | ✅ Active |
-| cowrie-01 | 010 | 192.168.1.186 | 4.14.3 | ✅ Active |
-| lab-pve | 012 | 192.168.1.108 | 4.14.3 | ✅ Active |
-| jellyfin-02 | 013 | 192.168.1.223 | 4.14.3 | ✅ Active |
+| pihole-01 | 001 | 192.168.1.225 | 4.14.5 | ✅ Active |
+| unbound-01 | 002 | 192.168.1.84 | 4.14.5 | ✅ Active |
+| uptime-kuma-01 | 003 | 192.168.1.4 | 4.14.5 | ✅ Active |
+| vaultwarden-01 | 004 | 192.168.1.195 | 4.14.5 | ✅ Active |
+| caddy-01 | 005 | 192.168.1.107 | 4.14.5 | ✅ Active |
+| wireguard-01 | 006 | 192.168.1.110 | 4.14.5 | ✅ Active |
+| nextcloud-aio-02 | 007 | 192.168.1.56 | 4.14.5 | ✅ Active |
+| immich-01 | 009 | 192.168.1.219 | 4.14.5 | ✅ Active |
+| cowrie-01 | 010 | 192.168.1.186 | 4.14.5 | ✅ Active |
+| lab-pve | 012 | 192.168.1.108 | 4.14.5 | ✅ Active |
+| jellyfin-02 | 013 | 192.168.1.223 | 4.14.5 | ✅ Active |
+| win-server-01 | 015 | 192.168.1.150 | 4.14.3 | ✅ Active |
+
+---
+
+## Wazuh Custom Rules
+
+Custom detection rules written and confirmed firing in Wazuh with MITRE ATT&CK tagging and Discord alerts.
+
+| Rule ID | Description | MITRE | Level |
+|---------|-------------|-------|-------|
+| 100002 | Cowrie: connection attempt to honeypot | — | 3 |
+| 100003 | Cowrie: successful login to honeypot | — | 10 |
+| 100004 | Cowrie: command executed in honeypot | — | 10 |
+| 100005 | Cowrie: file download attempted | — | 12 |
+| 100006 | Cowrie: port scan or pivot attempt | — | 8 |
+| 100010 | Brute force: 5+ failed logons within 120s (Event ID 4625) | T1110 | 12 |
+| 100020 | Kerberoasting: RC4 encrypted Kerberos service ticket requested (Event ID 4769) | T1558.003 | 12 |
 
 ---
 
@@ -125,21 +144,19 @@ Wazuh monitors 11 agents across the lab. All agents must match server version (4
 
 ## In Progress
 
-- **Active Directory Lab** — Windows Server VM on Proxmox, AD DS, monitored by Wazuh. ISO ready. RAM available.
 - **OPNsense + VLANs** — OPNsense installed at 192.168.1.254. VLAN 10 (trusted), VLAN 20 (IoT), VLAN 30 (DMZ) planned. Managed switch ready.
 - **CIS Benchmark Hardening** — pihole-01 at 53%. Rolling out to remaining agents.
-- **Wazuh Custom Rules** — Cowrie rules written and confirmed firing. More detection rules and attack simulations planned.
+- **Cowrie Internet Exposure** — Expose cowrie-01 to internet after VLAN/DMZ is configured to capture real attack data.
 
 ---
 
 ## Planned (Next Phase)
 
-1. **Active Directory Lab** — Windows Server VM, AD DS, Wazuh monitoring.
-2. **OPNsense VLANs** — Configure VLAN 10/20/30 on managed switch alongside OPNsense.
-3. **Cowrie Internet Exposure** — Expose cowrie-01 to internet after VLAN/DMZ is configured to capture real attack data.
-4. **Wazuh Discord Alerts** — Push real-time notifications when Cowrie and other rules fire.
-5. **Home Assistant** — RAM now available. Attempt after AD lab.
-6. **SSH Key Auth** — Roll out labadmin + key auth to remaining LXCs.
+1. **OPNsense VLANs** — Configure VLAN 10/20/30 on managed switch alongside OPNsense.
+2. **Cowrie Internet Exposure** — Expose cowrie-01 to internet after VLAN/DMZ configured.
+3. **Home Assistant** — RAM available. Attempt after VLANs stable.
+4. **SSH Key Auth** — Roll out labadmin + key auth to remaining LXCs.
+5. **Proxmox SSD Upgrade** — Kingston A400 240GB to resolve snapshot space limitations.
 
 ---
 
@@ -147,12 +164,13 @@ Wazuh monitors 11 agents across the lab. All agents must match server version (4
 
 Detailed setup notes for each service are in the repo:
 
-- [Pi-hole + Unbound](pihole-unbound-setup.md)
-- [Uptime Kuma](uptime-kuma-setup.md)
-- [WireGuard (wg-easy)](wireguard-setup.md)
-- [Wazuh SIEM](wazuh-04.md)
-- [Nextcloud AIO](nextcloud-setup.md)
-- [Immich](immich-setup.md)
-- [HDD Partition Layout](hdd-partition-layout.md)
-- [Domain + Wildcard Cert Migration](domain-cert-migration.md)
-- [Portainer](portainer-setup.md)
+- [Pi-hole + Unbound](docs/pihole-unbound-setup.md)
+- [Uptime Kuma](docs/uptime-kuma-setup.md)
+- [WireGuard (wg-easy)](docs/wireguard-setup.md)
+- [Wazuh SIEM](docs/wazuh-04.md)
+- [Nextcloud AIO](docs/nextcloud-setup.md)
+- [Immich](docs/immich-setup.md)
+- [HDD Partition Layout](docs/hdd-partition-layout.md)
+- [Domain + Wildcard Cert Migration](docs/domain-cert-migration.md)
+- [Portainer](docs/portainer-setup.md)
+- [Active Directory Attack Lab — Brute Force & Kerberoasting](docs/ad-kerberoasting-lab.md)
