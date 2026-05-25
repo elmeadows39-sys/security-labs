@@ -148,7 +148,7 @@ Custom detection rules written and confirmed firing in Wazuh with MITRE ATT&CK t
 
 ## Network Diagram
 
-*Network Diagram — update pending to reflect VLAN layout*
+![Network Diagram](diagrams/Diagram%202.0.png)
 
 ---
 
