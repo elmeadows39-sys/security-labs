@@ -182,6 +182,8 @@ Custom detection rules written and confirmed firing in Wazuh with MITRE ATT&CK t
 - [Cowrie Honeypot](cowrie-setup.md)
 - [Active Directory Attack Lab — Brute Force & Kerberoasting](ad-kerberoasting-lab.md)
 - [VirusTotal FIM Integration](virustotal-fim-integration.md)
+- [Router Replacement & OPNsense Routing Fix](docs/router-replacement-opnsense-routing.md)
+- [Z240 Cutover Attempt & Edge Router Failure](docs/z240-cutover-and-edge-router-failure.md)
 - CIS Benchmark Hardening *(coming soon)*
 
 ### Monitoring & Apps
