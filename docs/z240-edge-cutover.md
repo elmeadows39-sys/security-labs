@@ -130,9 +130,16 @@ Run from a wired PC on the switch (testing) and a phone on mobile data (communic
 - **Plan the communication channel.** Testing from a wired PC and talking over mobile data avoided the August Wi-Fi juggling.
 - **Change the old router last, and keep it reachable.** A known reserved address and plugging it straight back in kept the GUI available.
 
+## Follow-ups (completed after the cutover)
+
+- **Wazuh agent enrolled** (Oct 11) — the agent key isn't part of the exported config, so the Z240 enrolled fresh as a new agent.
+- **WireGuard restored** (Oct 13) — OPNsense now keeps a DNS-only Cloudflare record current through its dynamic DNS plugin (scoped API token), with one port forward to the VPN container. See [wireguard-setup.md](wireguard-setup.md).
+- **Proxmox host moved onto VLAN 10** (Oct 16) — the host left the flat network; NFS to the Nextcloud and Immich VMs now stays within one VLAN. Restart-tested Oct 19.
+- **Gateway monitoring and automatic config backups** (Oct 16–17) — WAN quality is recorded for outage investigation, and the firewall uploads its config to Nextcloud on every change.
+- **DMZ isolated in both directions** (Oct 23) — the house LAN and the Trusted VLAN are now blocked from the DMZ, with one pass rule so the uptime monitor can still check the honeypot.
+- **Network diagram redrawn** (Diagram 3.0).
+
 ## Still Open
 
-- Enroll the new firewall's Wazuh agent (the agent key isn't part of the exported config, so it needs a fresh enrollment).
-- Tighten LAN → DMZ access now that the house network reaches every VLAN directly.
-- WireGuard: dynamic DNS and a port forward on the new edge.
-- Redraw the network diagram.
+- Upgrade to the OPNsense 26.7 series (26.1 is end of life).
+- Expose the honeypot to the internet through a WAN port forward, then retry Suricata → Wazuh on the Intel NICs.
