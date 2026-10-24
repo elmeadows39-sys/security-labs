@@ -169,7 +169,7 @@ Custom detection rules written and confirmed firing in Wazuh with MITRE ATT&CK t
 
 ## Network Diagram
 
-![Network Diagram](diagrams/Diagram%203.0.png)
+![Network Diagram](diagrams/Homelab%203.0.png)
 
 ---
 
