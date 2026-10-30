@@ -52,7 +52,7 @@ One Destination NAT rule on OPNsense 26.7:
 
 Firewall → Log Files → Live View, filtered on 2222, showed the first outside hit about a minute after Apply: an inbound WAN connection on port 22 passed by "Cowrie honeypot SSH" and forwarded into the DMZ. (Direct probes to port 2222 on the public address are correctly blocked — only 22 is forwarded. The repeating DMZ lines from 192.168.10.10 are the uptime monitor.)
 
-![Firewall Live View — first scanner reaching Cowrie](screenshots/honeypot/2-firewall-live-view.png)
+![Firewall Live View — first scanner reaching Cowrie](screenshots/honeypot/2-firewall-live-view-IP.png)
 
 ## Hour 1 — Scouts
 
@@ -68,7 +68,7 @@ One professional scanning server and two residential connections — most likely
 
 ![AbuseIPDB — Swiss scanner](screenshots/honeypot/3a-abuseipdb-switzerland.png)
 ![AbuseIPDB — UK residential](screenshots/honeypot/3b-abuseipdb-uk.png)
-![AbuseIPDB — Russian residential](screenshots/honeypot/3c-abuseipdb-russia.png)
+![AbuseIPDB — Russian residential](screenshots/honeypot/3c-abuseipdb-russia-TOP.png)
 
 ## Hours 6–7 — Password Spraying
 
