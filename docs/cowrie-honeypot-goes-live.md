@@ -2,7 +2,7 @@
 
 **Date:** October 29–30, 2026
 **Result:** ✅ Live — SSH honeypot exposed on WAN port 22; first malware sample captured within 24 hours
-**Builds on:** [z240-edge-cutover.md](z240-edge-cutover.md) (DMZ isolation, "Still Open" item)
+**Builds on:** [cowrie-setup.md](cowrie-setup.md) (the original build) and [z240-edge-cutover.md](z240-edge-cutover.md) (DMZ isolation, "Still Open" item)
 
 ## Overview
 
@@ -48,11 +48,11 @@ One Destination NAT rule on OPNsense 26.7:
 | Log | on |
 | Firewall rule | **Register rule** (auto-creates the matching WAN pass rule) |
 
-![OPNsense Destination NAT with the Cowrie rule](images/honeypot/1-opnsense-destination-nat.png)
+![OPNsense Destination NAT with the Cowrie rule](screenshots/honeypot/1-opnsense-destination-nat.png)
 
 Firewall → Log Files → Live View, filtered on 2222, showed the first outside hit about a minute after Apply: an inbound WAN connection on port 22 passed by "Cowrie honeypot SSH" and forwarded into the DMZ. (Direct probes to port 2222 on the public address are correctly blocked — only 22 is forwarded. The repeating DMZ lines from 192.168.10.10 are the uptime monitor.)
 
-![Firewall Live View — first scanner reaching Cowrie](images/honeypot/2-firewall-live-view.png)
+![Firewall Live View — first scanner reaching Cowrie](screenshots/honeypot/2-firewall-live-view.png)
 
 ## Hour 1 — Scouts
 
@@ -66,9 +66,9 @@ The first visitors connected, read the SSH banner and left without attempting a 
 
 One professional scanning server and two residential connections — most likely compromised home devices conscripted into a botnet.
 
-![AbuseIPDB — Swiss scanner](images/honeypot/3a-abuseipdb-switzerland.png)
-![AbuseIPDB — UK residential](images/honeypot/3b-abuseipdb-uk.png)
-![AbuseIPDB — Russian residential](images/honeypot/3c-abuseipdb-russia.png)
+![AbuseIPDB — Swiss scanner](screenshots/honeypot/3a-abuseipdb-switzerland.png)
+![AbuseIPDB — UK residential](screenshots/honeypot/3b-abuseipdb-uk.png)
+![AbuseIPDB — Russian residential](screenshots/honeypot/3c-abuseipdb-russia.png)
 
 ## Hours 6–7 — Password Spraying
 
@@ -107,7 +107,7 @@ a151d3f4f2422531f30a843ffb35479596c86722bb103bdf8591105687f9b125
 
 On a real server this would mine Monero on the victim's CPU, hide itself with a rootkit and survive reboots. Here it sat inert.
 
-![VirusTotal result for the captured sample](images/honeypot/4-virustotal-xmrig-miner.png)
+![VirusTotal result for the captured sample](screenshots/honeypot/4-virustotal-xmrig-miner.png)
 
 ## Alert Tuning — The Flood, and a Gap
 
@@ -116,7 +116,7 @@ Cowrie's JSON log was already shipped to Wazuh by the container's agent, and fou
 1. **Noise.** Successful logins (rule 100003) and every typed command (100004) were level 10 — the Discord threshold. One sprayer produced **1,200+ alerts** in a day, and #security-alerts filled with cards that meant nothing.
 2. **A blind spot.** The rules alerted on file *downloads* (`cowrie.session.file_download`, wget/curl) but not *uploads*. The miner arrived by **SFTP upload** (`cowrie.session.file_upload`) — the most important event of the day raised no alert at all.
 
-![Discord flooded with login and command alerts](images/honeypot/5-discord-alert-flood.png)
+![Discord flooded with login and command alerts](screenshots/honeypot/5-discord-alert-flood.png)
 
 Fix, in `local_rules.xml` (backup taken first, `wazuh-analysisd -t` to validate, manager restarted):
 
@@ -135,7 +135,7 @@ Fix, in `local_rules.xml` (backup taken first, `wazuh-analysisd -t` to validate,
 </rule>
 ```
 
-![Updated Cowrie rules in local_rules.xml](images/honeypot/6-wazuh-local-rules.png)
+![Updated Cowrie rules in local_rules.xml](screenshots/honeypot/6-wazuh-local-rules.png)
 
 **Verification:** Discord stayed silent after the restart while the login-alert count in `alerts.json` kept climbing (1,347 → 1,348 a minute apart) — every event is still recorded and searchable in Wazuh; only malware delivery reaches the phone. A separate test (synthetic SSH brute-force via `logger`) confirmed level-10 alerts still push to the phone end to end.
 
